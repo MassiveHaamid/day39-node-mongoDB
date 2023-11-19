@@ -1,10 +1,11 @@
-const winston = require('winston');
+const info = (...params) => { 
+    console.log(...params);
+}
 
-const logger = winston.createLogger({
-    transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({ filename: 'logfile.log' }),
-    ],
-});
+const error = (...params) => { 
+    console.error(...params); 
+}
 
-module.exports = logger;
+module.exports = { 
+    info, error 
+}

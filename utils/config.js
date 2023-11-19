@@ -1,4 +1,6 @@
+require('dotenv').config();
+
 module.exports = {
-    mongoURI: 'your-mongodb-connection-string',
-    port: process.env.PORT || 3000,
+    MONGO_URI: `mongodb+srv://reshma9298h:hamizmongo@hamizclust.dpaalqo.mongodb.net/day39-DB`,
+    PORT: process.env.PORT || 3000,
 };
