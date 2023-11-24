@@ -1,31 +1,29 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const config = require('./utils/config');
-const logger = require('./utils/logger');
-const mongoose = require('mongoose');
+const path = require('path');
 const cors = require('cors');
+const mentorsRouter = require('./controllers/mentorController');
+const studentsRouter = require('./controllers/studentController');
+const assignmentsRouter = require('./controllers/assignmentController');
+
 const app = express();
 
-// Middleware
+// Middleware setup
 app.use(cors());
 app.use(bodyParser.json());
 
-logger.info('Connecting to', config.MONGO_URI);
-mongoose.connect(config.MONGO_URI)
-.then(() => {
-    logger.info('Connected to MongoDB...');
-})
-.catch((err) => {
-    logger.error('Error connecting to MongoDB', err);
+// Serve static files from the 'frontend' directory
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+// Define your API endpoints here
+app.use('/mentors', mentorsRouter);
+app.use('/students', studentsRouter);
+app.use('/assignments', assignmentsRouter);
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
-
-// Routes
-const mentorRoutes = require('./controllers/mentorController');
-const studentRoutes = require('./controllers/studentController');
-const assignmentRoutes = require('./controllers/assignmentController');
-
-app.use('/mentors', mentorRoutes);
-app.use('/students', studentRoutes);
-app.use('/assignments', assignmentRoutes);
 
 module.exports = app;
