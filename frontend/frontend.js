@@ -1,5 +1,5 @@
 //Fetching a list of mentors from the server
-fetch('http://localhost:3000/mentors')
+fetch('http://localhost:4000/mentors')
     .then(response => response.json())
     .then(mentors => {
         // Do something with the retrieved mentors (e.g., display on the web page)
@@ -18,7 +18,7 @@ const mentorData = {
     email: 'newmentor@example.com'
 };
 
-fetch('http://localhost:3000/mentors', {
+fetch('http://localhost:4000/mentors', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json'

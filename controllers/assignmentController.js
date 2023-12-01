@@ -1,30 +1,94 @@
 const express = require('express');
 const router = express.Router();
+const Assignment = require('../models/assignmentModel');
 const Student = require('../models/studentModel');
 const Mentor = require('../models/mentorModel');
-const logger = require('../utils/logger');
 
-// Assign a student to a mentor
-router.post('/assign/:mentorId/:studentId', async (req, res) => {
+router.post('/assignStudentToMentor', async (req, res) => {
     try {
-        const { mentorId, studentId } = req.params;
-        const mentor = await Mentor.findById(mentorId);
-        const student = await Student.findById(studentId);
+        const { mentorId, studentId, details } = req.body;
 
-        if (!mentor || !student) {
-            return res.status(404).json({ msg: 'Mentor or student not found' });
+        // Check if the student has already been assigned
+        const existingAssignment = await Assignment.findOne({ student: studentId });
+        if (existingAssignment) {
+            return res.status(400).json({ error: 'Student is already assigned to a mentor.' });
         }
 
-        mentor.students.push(studentId);
-        student.mentor = mentorId;
+        // Create a new assignment
+        const assignment = new Assignment({
+            mentor: mentorId,
+            student: studentId,
+            details: details || '',
+        });
 
-        await mentor.save();
-        await student.save();
+        // Update the mentor's students array
+        await Mentor.findByIdAndUpdate(mentorId, { $push: { students: studentId } });
 
-        res.status(200).json({ msg: 'Assignment successful' });
+        // Update the student's mentor field
+        await Student.findByIdAndUpdate(studentId, { mentor: mentorId });
+
+        // Save the assignment
+        const savedAssignment = await assignment.save();
+
+        res.status(201).json(savedAssignment);
     } catch (error) {
-        logger.error(error.message);
-        res.status(500).send('Server Error');
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Assign or Change Mentor for a particular Student
+router.put('/assignMentorToStudent/:studentId', async (req, res) => {
+    try {
+        const { mentorId } = req.body;
+        const studentId = req.params.studentId;
+
+        // Update the student's mentor field
+        const updatedStudent = await Student.findByIdAndUpdate(studentId, { mentor: mentorId }, { new: true });
+
+        // Update the mentor's students array
+        await Mentor.findByIdAndUpdate(mentorId, { $push: { students: studentId } });
+
+        res.status(200).json(updatedStudent);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Get all students for a particular mentor
+router.get('/studentsForMentor/:mentorId', async (req, res) => {
+    try {
+        const mentorId = req.params.mentorId;
+
+        // Get all students for the given mentor
+        const students = await Student.find({ mentor: mentorId });
+
+        res.status(200).json(students);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Get the previous mentor for a particular student
+router.get('/previousMentorForStudent/:studentId', async (req, res) => {
+    try {
+        const studentId = req.params.studentId;
+
+        // Get the student's previous mentor
+        const assignment = await Assignment.findOne({ student: studentId }).sort({ assignedAt: -1 });
+
+        if (!assignment) {
+            return res.status(404).json({ error: 'No previous mentor found for the student.' });
+        }
+
+        const previousMentorId = assignment.mentor;
+
+        res.status(200).json({ previousMentorId });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

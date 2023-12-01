@@ -16,12 +16,15 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Define your API endpoints here
+app.use('/assignments', require('./controllers/assignmentController'));
+
+// Define your API endpoints here
 app.use('/mentors', mentorsRouter);
 app.use('/students', studentsRouter);
 app.use('/assignments', assignmentsRouter);
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
