@@ -10,9 +10,6 @@ logger.info('Connecting to', config.MONGODB_URI);
 mongoose.connect(config.MONGODB_URI)
     .then(() => {
         logger.info('Connected to MongoDB...');
-        app.listen(config.PORT, () => {
-            logger.info(`Server is running on port ${config.PORT}`);
-        });
     })
     .catch((err) => { 
         logger.error('Error connecting to MongoDB', err)
